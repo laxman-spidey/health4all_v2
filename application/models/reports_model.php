@@ -178,6 +178,16 @@ class Reports_model extends CI_Model{
 		if($this->input->post('visit_name')){
 			$this->db->where('patient_visit.visit_name_id',$this->input->post('visit_name'));
 		}
+		if($this->input->post('icd_code')){
+			$icd_code = substr($this->input->post('icd_code'),0,strpos($this->input->post('icd_code')," "));
+			$this->db->where('icd_code.icd_code',$icd_code);
+		}
+		if($this->input->post('icd_block')){
+			$this->db->where('icd_block.block_id',$this->input->post('icd_block'));
+		}
+		if($this->input->post('icd_chapter')){
+			$this->db->where('icd_chapter.chapter_id',$this->input->post('icd_chapter'));
+		}
         //Selection of visit type OP/IP
 		if($this->input->post('visit_type')){
 			$this->db->where('patient_visit.visit_type',$this->input->post('visit_type'));
@@ -733,9 +743,9 @@ function get_sensitivity_summary(){
                      ->join('test_master','test_master.test_master_id = test.test_master_id AND (test_master.test_area_id = 2 AND test_master.test_method_id = 3)')
                         ->join('test_method','test_method.test_method_id = test_master.test_method_id')
                         ->join('test_area','test_area.test_area_id = test_master.test_area_id')                        		
-                        ->join('micro_organism','micro_organism_test.micro_organism_id = micro_organism.micro_organism_id','left')
+                        ->join('micro_organism','micro_organism_test.micro_organism_id = micro_organism.micro_organism_id')
                         ->join('antibiotic_test','antibiotic_test.micro_organism_test_id=micro_organism_test.micro_organism_test_id','left')			
-			->join('antibiotic','antibiotic_test.antibiotic_id = antibiotic.antibiotic_id','left')			
+			->join('antibiotic','antibiotic_test.antibiotic_id = antibiotic.antibiotic_id')			
 			->join('test_sample','test_order.order_id = test_sample.order_id')
 			->join('specimen_type','test_sample.specimen_type_id = specimen_type.specimen_type_id')
 			->join('patient_visit','test_order.visit_id = patient_visit.visit_id')

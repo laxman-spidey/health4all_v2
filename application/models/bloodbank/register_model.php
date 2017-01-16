@@ -355,22 +355,28 @@ class Register_model extends CI_Model{
 	*/
 	function get_donors(){
 		if($this->input->post('donor_id')){
-                    $this->db->like('LOWER(blood_donor.donor_id)',strtolower($this->input->post('donor_id')));
+                    $donor_id = $this->input->post('donor_id');
+                    $this->db->where('blood_donor.donor_id',$donor_id);
 		}
 		if($this->input->post('donor_name')){
-                    $this->db->like('LOWER(blood_donor.name)',strtolower($this->input->post('donor_name')));
+                    $donor_name = $this->input->post('donor_name');
+                    $this->db->like('LOWER(blood_donor.name)',strtolower($donor_name));
 		}
 		if($this->input->post('donor_email')){
-                    $this->db->like('LOWER(blood_donor.email)',strtolower($this->input->post('donor_email')));
+                    $donor_email = $this->input->post('donor_email');
+                    $this->db->like('LOWER(blood_donor.email)',strtolower($donor_email));
 		}
 		if($this->input->post('donor_mobile')){
-                    $this->db->like('blood_donor.phone',$this->input->post('donor_mobile'));
+                    $donor_mobile = $this->input->post('donor_mobile');
+                    $this->db->where('blood_donor.phone', $donor_mobile);
 		}
 		if($this->input->post('blood_group')){
-                    $this->db->where('blood_donor.blood_group',$this->input->post('blood_group'));
+                    $blood_group = $this->input->post('blood_group');
+                    $this->db->where('blood_donor.blood_group', $blood_group);
 		}
 		if($this->input->post('gender')){
-                    $this->db->where('blood_donor.sex',$this->input->post('gender'));
+                    $gender = $this->input->post('gender');
+                    $this->db->where('blood_donor.sex', $gender);
 		}
 		$this->db->select("donor_id, name, parent_spouse,
 		occupation,	
@@ -632,10 +638,36 @@ function make_request(){
     }
     
     function remove_donation($donation_id){
+        $donor_cancel_details =array(
+		'donation_id'=>$donation_id,
+		'reason'=>$this->input->post('reason_for_cancel'),
+		);
         $this->db->trans_start();
         $this->db->where('donation_id',$donation_id);
         $this->db->where('status_id','1');
 	$this->db->update('bb_donation',array('status_id'=>'-1'));
+        $this->db->insert('bb_donation_cancel',$donor_cancel_details);
+        $this->db->trans_complete();
+        if($this->db->trans_status()==TRUE){
+            return true;
+        }
+        else{
+            return false;
+        }
+        
+    }
+    
+    /* removing donor from bleeding and inserting the reason for cancelling*/
+    function remove_donation_from_bleeding($donation_id){
+        $bleeding_cancel_details =array(
+		'donation_id'=>$donation_id,
+		'reason'=>$this->input->post('reason_for_cancel'),
+		);
+        $this->db->trans_start();
+        $this->db->where('donation_id',$donation_id);
+        $this->db->where('status_id','2');
+	$this->db->update('bb_donation',array('status_id'=>'-1')); //changing the status id from 2 to -1
+        $this->db->insert('bb_donation_cancel',$bleeding_cancel_details);
         $this->db->trans_complete();
         if($this->db->trans_status()==TRUE){
             return true;
